@@ -44,28 +44,29 @@ def partToUrl(part: str) -> str:
 def partToPdfUrl(part: str) -> str:
     """
     Convert an LCSC part number to its datasheet PDF URL.
-    
+
     Args:
         part: The LCSC part number (e.g., C124378)
-        
+
     Returns:
         The URL to the datasheet PDF.
     """
-    return f"https://www.lcsc.com/datasheet/{part}.pdf"
+    return f"https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/{part}.pdf"
 
 def savePdf(part: str, path: Path) -> str:
     """
     Download the datasheet PDF for a given LCSC part number and save it to the specified path.
-    
+
     Args:
         part: The LCSC part number (e.g., C124378)
         path: The local path to save the PDF to.
-        
+
     Returns:
         The string representation of the local saved path.
-        
+
     Raises:
         requests.RequestException: If the download fails.
+        ValueError: If the response is not a valid PDF file.
     """
     url = partToPdfUrl(part)
     headers = {
@@ -73,17 +74,35 @@ def savePdf(part: str, path: Path) -> str:
     }
     response = requests.get(url, stream=True, headers=headers)
     response.raise_for_status()
-    
+
+    # Check Content-Type to ensure we're getting a PDF
+    content_type = response.headers.get('Content-Type', '').lower()
+    if 'application/pdf' not in content_type:
+        raise ValueError(
+            f"Expected PDF file but received Content-Type: {content_type}. "
+            f"The URL {url} did not return a valid PDF file. "
+            f"The datasheet may not be available for part {part}."
+        )
+
     # Ensure the directory exists
     if not path.exists():
         path.mkdir(parents=True, exist_ok=True)
 
     datasheet_path = path / f"{part}.pdf"
-    
+
+    # Download and validate PDF magic bytes
+    content = b''
     with open(datasheet_path, 'wb') as f:
         for chunk in response.iter_content(chunk_size=8192):
+            if not content:  # First chunk - validate PDF signature
+                content = chunk
+                if not chunk.startswith(b'%PDF'):
+                    raise ValueError(
+                        f"File does not appear to be a valid PDF (missing PDF signature). "
+                        f"The datasheet may not be available for part {part}."
+                    )
             f.write(chunk)
-            
+
     return str(datasheet_path)
 
 def getPartDetails(part: str) -> dict:

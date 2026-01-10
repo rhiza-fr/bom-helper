@@ -10,7 +10,7 @@ def test_partToUrl():
 
 def test_partToPdfUrl():
     part = "C124378"
-    expected = "https://www.lcsc.com/datasheet/C124378.pdf"
+    expected = "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/C124378.pdf"
     assert partToPdfUrl(part) == expected
 
 def test_savePdf(tmp_path):
