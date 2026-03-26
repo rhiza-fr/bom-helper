@@ -9,25 +9,44 @@ on:
 jobs:
   test:
     name: Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    runs-on: python-test-image
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: uv sync --frozen --python ${{ matrix.python-version }}
 
       - name: Run tests
-        run: uv run pytest -m "not network"
+        run: uv run --python ${{ matrix.python-version }} pytest -m "not network"
+
+  code-quality:
+    name: Code Quality
+    runs-on: python-test-image
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: uv sync --frozen --python 3.12
+
+      - name: Run code quality checks
+        run: cq check . -o score
+
+  upgrade-test:
+    name: Dependency Upgrade Test
+    runs-on: python-test-image
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upgrade all dependencies
+        run: uv lock --upgrade
+
+      - name: Run tests with upgraded dependencies
+        run: uv sync --frozen --python 3.14 && uv run --python 3.14 pytest -m "not network"
