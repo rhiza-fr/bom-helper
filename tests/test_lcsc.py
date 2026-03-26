@@ -1,3 +1,4 @@
+import pytest
 from bom_helper.main import partToUrl, partToPdfUrl, savePdf
 
 def test_partToUrl():
@@ -10,6 +11,7 @@ def test_partToPdfUrl():
     expected = "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/C124378.pdf"
     assert partToPdfUrl(part) == expected
 
+@pytest.mark.network
 def test_savePdf(tmp_path):
     # This test actually hits the network, so we might want to mock it in a real CI environment.
     # For this verification task, hitting the real URL is fine as requested.
