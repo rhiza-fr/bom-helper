@@ -17,15 +17,8 @@ A Python CLI tool for fetching electronic component information from LCSC (a Chi
 
 ## Installation
 
-This project uses [uv](https://github.com/astral-sh/uv) for package management. Make sure you have Python 3.12+ installed.
-
 ```bash
-# Clone the repository
-git clone https://github.com/rhiza-fr/bom-helper.git
-cd bom-helper
-
-# Install the tool (makes `bom` available on your PATH)
-uv tool install .
+uv tool install bom-helper
 ```
 
 After installation, use `bom` directly — no `uv run` prefix needed.
@@ -130,6 +123,9 @@ bom --version
 ### Setup
 
 ```bash
+git clone https://github.com/rhiza-fr/bom-helper.git
+cd bom-helper
+
 # Install development dependencies
 uv sync --group dev
 ```
