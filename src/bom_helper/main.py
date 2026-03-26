@@ -72,7 +72,7 @@ def savePdf(part: str, path: Path) -> str:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    response = requests.get(url, stream=True, headers=headers)
+    response = requests.get(url, stream=True, headers=headers, timeout=30)
     response.raise_for_status()
 
     # Check Content-Type to ensure we're getting a PDF
@@ -121,7 +121,7 @@ def getPartDetails(part: str) -> dict:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
     
     soup = BeautifulSoup(response.text, "html.parser")
@@ -140,7 +140,7 @@ def getPartDetails(part: str) -> dict:
                     a_tag = cols[1].find("a")
                     if a_tag and a_tag.has_attr("href"):
                         # Ensure absolute URL if relative
-                        href = a_tag["href"]
+                        href = str(a_tag["href"])
                         if href.startswith("/"):
                             value = f"https://www.lcsc.com{href}"
                         else:

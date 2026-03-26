@@ -1,6 +1,5 @@
 from bom_helper.main import getPartDetails
 from unittest.mock import patch, MagicMock
-import pytest
 
 # Truncated HTML snippet for testing
 # Truncated HTML snippet for testing

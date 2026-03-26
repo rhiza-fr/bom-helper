@@ -1,7 +1,4 @@
-from pathlib import Path
 from bom_helper.main import partToUrl, partToPdfUrl, savePdf
-import pytest
-import os
 
 def test_partToUrl():
     part = "C124378"

@@ -1,10 +1,8 @@
 """KiCad library export functionality using easyeda2kicad."""
 
 import logging
-import os
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Optional
 
 from easyeda2kicad.easyeda.easyeda_api import EasyedaApi
 from easyeda2kicad.easyeda.easyeda_importer import (
@@ -28,7 +26,7 @@ from bom_helper.main import validate_lcsc_part_number
 logging.getLogger("easyeda2kicad").setLevel(logging.ERROR)
 
 
-def _get_output_paths(base_path: Path) -> Dict[str, Path]:
+def _get_output_paths(base_path: Path) -> dict[str, Path]:
     """Calculate all library paths from a base path."""
     return {
         "symbol_lib": base_path.with_suffix(".kicad_sym"),
@@ -74,7 +72,7 @@ def _fp_already_in_footprint_lib(lib_path: Path, package_name: str) -> bool:
 
 def export_symbol(
     part: str, output_path: Path, overwrite: bool = False
-) -> Dict[str, any]:
+) -> dict[str, Path | str]:
     """
     Export KiCad symbol for a given LCSC part number.
 
@@ -157,7 +155,7 @@ def export_symbol(
 
 def export_footprint(
     part: str, output_path: Path, overwrite: bool = False
-) -> Dict[str, any]:
+) -> dict[str, Path | str]:
     """
     Export KiCad footprint for a given LCSC part number.
 
@@ -235,7 +233,7 @@ def export_footprint(
 
 def export_3d_model(
     part: str, output_path: Path, overwrite: bool = False
-) -> Dict[str, any]:
+) -> dict[str, Path | str]:
     """
     Export 3D model for a given LCSC part number.
 
@@ -273,6 +271,8 @@ def export_3d_model(
     model_importer = Easyeda3dModelImporter(
         easyeda_cp_cad_data=cad_data, download_raw_3d_model=True
     )
+    if not model_importer.output:
+        raise ValueError(f"No 3D model data found for {part}.")
     exporter = Exporter3dModelKicad(model_3d=model_importer.output)
     exporter.export(lib_path=str(output_path))
 
@@ -299,7 +299,7 @@ def export_3d_model(
 
 def export_full(
     part: str, output_path: Path, overwrite: bool = False
-) -> Dict[str, any]:
+) -> dict[str, Path | str | None]:
     """
     Export symbol, footprint, and 3D model for a given LCSC part number.
 
@@ -318,7 +318,6 @@ def export_full(
 
     # Get library name and paths
     lib_name = output_path.name
-    paths = _get_output_paths(output_path)
 
     # Ensure library structure exists
     _ensure_library_structure(output_path, lib_name)
