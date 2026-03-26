@@ -22,7 +22,7 @@ def validate_lcsc_part_number(part: str) -> None:
         Valid: C2040, C124378, C999999999
         Invalid: C:\path\to\file, C123abc, C-123, just "C"
     """
-    if not re.match(r'^C\d+$', part):
+    if not re.match(r"^C\d+$", part):
         raise ValueError(
             f"Invalid LCSC part number: '{part}'. "
             "LCSC part numbers must start with 'C' followed by digits only (e.g., C2040, C124378)."
@@ -32,14 +32,15 @@ def validate_lcsc_part_number(part: str) -> None:
 def partToUrl(part: str) -> str:
     """
     Convert an LCSC part number to its product detail URL.
-    
+
     Args:
         part: The LCSC part number (e.g., C124378)
-        
+
     Returns:
         The URL to the product detail page.
     """
     return f"https://www.lcsc.com/product-detail/{part}.html"
+
 
 def partToPdfUrl(part: str) -> str:
     """
@@ -52,6 +53,7 @@ def partToPdfUrl(part: str) -> str:
         The URL to the datasheet PDF.
     """
     return f"https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/{part}.pdf"
+
 
 def savePdf(part: str, path: Path) -> str:
     """
@@ -76,8 +78,8 @@ def savePdf(part: str, path: Path) -> str:
     response.raise_for_status()
 
     # Check Content-Type to ensure we're getting a PDF
-    content_type = response.headers.get('Content-Type', '').lower()
-    if 'application/pdf' not in content_type:
+    content_type = response.headers.get("Content-Type", "").lower()
+    if "application/pdf" not in content_type:
         raise ValueError(
             f"Expected PDF file but received Content-Type: {content_type}. "
             f"The URL {url} did not return a valid PDF file. "
@@ -91,12 +93,12 @@ def savePdf(part: str, path: Path) -> str:
     datasheet_path = path / f"{part}.pdf"
 
     # Download and validate PDF magic bytes
-    content = b''
-    with open(datasheet_path, 'wb') as f:
+    content = b""
+    with open(datasheet_path, "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             if not content:  # First chunk - validate PDF signature
                 content = chunk
-                if not chunk.startswith(b'%PDF'):
+                if not chunk.startswith(b"%PDF"):
                     raise ValueError(
                         f"File does not appear to be a valid PDF (missing PDF signature). "
                         f"The datasheet may not be available for part {part}."
@@ -105,36 +107,37 @@ def savePdf(part: str, path: Path) -> str:
 
     return str(datasheet_path)
 
+
 def getPartDetails(part: str) -> dict:
     """
     Fetch and parse the LCSC product page for a given part number.
-    
+
     Args:
         part: The LCSC part number (e.g., C124378)
-        
+
     Returns:
         A dictionary containing the part details.
     """
     from bs4 import BeautifulSoup
-    
+
     url = partToUrl(part)
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
-    
+
     soup = BeautifulSoup(response.text, "html.parser")
-    
+
     details = {}
-    details['url'] = url
+    details["url"] = url
     table = soup.find("table", class_="tableInfoWrap")
     if table:
         for row in table.find_all("tr"):
             cols = row.find_all("td")
             if len(cols) >= 2:
                 key = cols[0].get_text(strip=True)
-                
+
                 # Special handling for "Datasheet": get URL
                 if key == "Datasheet":
                     a_tag = cols[1].find("a")
@@ -152,13 +155,14 @@ def getPartDetails(part: str) -> dict:
                     # The suffix is in <div class="asianBrandsTagIconWrap ...">
                     # We can clone the tag or remove the nested div
                     import copy
+
                     td_clone = copy.copy(cols[1])
                     for suffix in td_clone.find_all(class_="asianBrandsTagIconWrap"):
                         suffix.decompose()
                     value = td_clone.get_text(strip=True)
                 else:
                     value = cols[1].get_text(strip=True)
-                    
+
                 details[key] = value
 
     # Parse Products Specifications
@@ -167,7 +171,7 @@ def getPartDetails(part: str) -> dict:
     # The snippet shows headers with h2 font-Bold-600 fz-20.
     # We can try to find the table that contains "Category" or "Manufacturer" in td id or text.
     # Or iterate over all tables and check headers.
-    
+
     specs = {}
     # Broad search for all tables
     for tbl in soup.find_all("table"):
@@ -177,7 +181,7 @@ def getPartDetails(part: str) -> dict:
         if "Type" in headers and "Description" in headers:
             for row in tbl.find_all("tr"):
                 cols = row.find_all("td")
-                # Expected at least 2 cols. 
+                # Expected at least 2 cols.
                 # Col 0: Type (e.g. Category), Col 1: Description (value)
                 if len(cols) >= 2:
                     key = cols[0].get_text(strip=True)
@@ -186,7 +190,7 @@ def getPartDetails(part: str) -> dict:
                         specs[key] = val
             if specs:
                 details["Specifications"] = specs
-                break # Found the specs table
+                break  # Found the specs table
 
     # Parse Pricing
     pricing = []
@@ -199,25 +203,23 @@ def getPartDetails(part: str) -> dict:
                 qty_text = cols[0].get_text(strip=True)
                 unit_price = cols[1].get_text(strip=True)
                 ext_price = cols[2].get_text(strip=True)
-                
+
                 # Qty often has '+' like '11+'. Clean it if desired, but keeping raw is finding for now.
-                pricing.append({
-                    "Qty": qty_text,
-                    "Unit Price": unit_price,
-                    "Ext. Price": ext_price
-                })
-    
+                pricing.append(
+                    {"Qty": qty_text, "Unit Price": unit_price, "Ext. Price": ext_price}
+                )
+
     if pricing:
         details["Pricing"] = pricing
 
     # Extract Product Images from JS
     import re
     import json
-    
+
     # Regex to find productImages:["url1", "url2", ...]
     # The snippet provided: productImages:["https:...",...]
     # We look for productImages: followed by a bracketed list.
-    match = re.search(r'productImages\s*:\s*(\[[^\]]*\])', response.text)
+    match = re.search(r"productImages\s*:\s*(\[[^\]]*\])", response.text)
     if match:
         try:
             images_json = match.group(1)
@@ -226,5 +228,5 @@ def getPartDetails(part: str) -> dict:
                 details["Images"] = images
         except json.JSONDecodeError:
             pass
-            
+
     return details

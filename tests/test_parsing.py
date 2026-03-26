@@ -41,7 +41,8 @@ MOCK_HTML = """
 </script>
 """
 
-@patch('requests.get')
+
+@patch("requests.get")
 def test_getPartDetails(mock_get):
     mock_response = MagicMock()
     mock_response.text = MOCK_HTML
@@ -53,22 +54,22 @@ def test_getPartDetails(mock_get):
 
     # Manufacturer text should be cleaned of "Asian Brands"
     assert details["Manufacturer"] == "hanxia"
-    
+
     # Datasheet should be a URL
-    # The snippet has <a ... href="/datasheet/C42379199.pdf" ...> which partToUrl converts? 
+    # The snippet has <a ... href="/datasheet/C42379199.pdf" ...> which partToUrl converts?
     # No, getPartDetails logic for Datasheet is now extraction.
-    # Note: The mock snippet doesn't have a Datasheet row in the main table in previous tool call, 
+    # Note: The mock snippet doesn't have a Datasheet row in the main table in previous tool call,
     # let me check the previous replace_file_content for test_parsing.
     # Ah, I need to add Datasheet row to MOCK_HTML or check if it exists.
     # The MOCK_HTML in last step didn't have Datasheet row. I should add it.
-    
+
     assert "HX PM2.54-1x7P TP-YQ" in details["Mfr. Part #"]
-    
+
     # Check Specifications
     assert "Specifications" in details
     assert details["Specifications"]["Category"] == "Connectors"
     assert details["Specifications"]["Package"] == "SMD,P=2.54mm"
-    
+
     # Check Pricing
     assert "Pricing" in details
     assert len(details["Pricing"]) == 2
@@ -78,6 +79,6 @@ def test_getPartDetails(mock_get):
     # Check Images
     assert "Images" in details
     assert len(details["Images"]) == 2
-    assert details["Images"][0] == "https://assets.lcsc.com/images/lcsc/900x900/front.jpg"
-
-
+    assert (
+        details["Images"][0] == "https://assets.lcsc.com/images/lcsc/900x900/front.jpg"
+    )

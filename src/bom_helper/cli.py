@@ -9,9 +9,15 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from bom_helper.main import getPartDetails, savePdf, validate_lcsc_part_number
-from bom_helper.kicad import export_full, export_symbol, export_footprint, export_3d_model
+from bom_helper.kicad import (
+    export_full,
+    export_symbol,
+    export_footprint,
+    export_3d_model,
+)
 
 app = typer.Typer()
+
 
 def version_callback(value: bool):
     if value:
@@ -22,6 +28,7 @@ def version_callback(value: bool):
             print("bom version: unknown")
         raise typer.Exit()
 
+
 @app.callback()
 def main(
     version: Optional[bool] = typer.Option(
@@ -31,9 +38,10 @@ def main(
         help="Show the application's version and exit.",
         callback=version_callback,
         is_eager=True,
-    )
+    ),
 ):
     pass
+
 
 @app.command()
 def pdf(
@@ -68,6 +76,7 @@ def pdf(
     if failed_parts:
         print(f"\n[red]Failed parts: {', '.join(failed_parts)}[/red]")
         raise typer.Exit(code=1)
+
 
 @app.command()
 def info(parts: List[str] = typer.Argument(..., help="One or more LCSC part numbers")):

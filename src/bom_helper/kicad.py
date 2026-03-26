@@ -200,7 +200,9 @@ def export_footprint(
 
     # Determine status
     if is_already_in_lib and not overwrite:
-        footprint_file = paths["footprint_lib"] / f"{easyeda_footprint.info.name}.kicad_mod"
+        footprint_file = (
+            paths["footprint_lib"] / f"{easyeda_footprint.info.name}.kicad_mod"
+        )
         return {
             "footprint_lib": paths["footprint_lib"],
             "footprint_file": footprint_file,
