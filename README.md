@@ -21,7 +21,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for package management. 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/bom-helper.git
+git clone https://github.com/rhiza-fr/bom-helper.git
 cd bom-helper
 
 # Install the tool (makes `bom` available on your PATH)
@@ -183,7 +183,7 @@ Integrates with [easyeda2kicad](https://github.com/uPesy/easyeda2kicad.py) to ge
 - Fetches CAD data from EasyEDA API
 - Converts symbols, footprints, and 3D models to KiCad format
 - Manages library files and prevents duplicates
-- Provides better UX than the standalone easyeda2kicad tool
+- Built on top of easyeda2kicad with a simpler batch-friendly CLI
 
 ## Requirements
 
@@ -202,7 +202,7 @@ All commands require valid LCSC part numbers. LCSC part numbers must:
 
 ## License
 
-This project is provided as-is for personal and educational use.
+MIT — see [LICENSE](LICENSE).
 
 ## Disclaimer
 
