@@ -24,12 +24,11 @@ This project uses [uv](https://github.com/astral-sh/uv) for package management. 
 git clone https://github.com/yourusername/bom-helper.git
 cd bom-helper
 
-# Install dependencies (uv will create a virtual environment automatically)
-uv sync
-
-# Or install in development mode
-uv pip install -e .
+# Install the tool (makes `bom` available on your PATH)
+uv tool install .
 ```
+
+After installation, use `bom` directly — no `uv run` prefix needed.
 
 ## Usage
 
@@ -39,10 +38,10 @@ Retrieve detailed information about one or more components by LCSC part number:
 
 ```bash
 # Single part
-uv run bom info C124378
+bom info C124378
 
 # Multiple parts
-uv run bom info C2040 C124378 C100
+bom info C2040 C124378 C100
 ```
 
 This returns a JSON object with all available information:
@@ -74,16 +73,16 @@ Download datasheets for one or more components:
 
 ```bash
 # Save to current directory
-uv run bom pdf C124378
+bom pdf C124378
 
 # Download multiple datasheets
-uv run bom pdf C2040 C124378 C100
+bom pdf C2040 C124378 C100
 
 # Save to a specific directory
-uv run bom pdf C124378 --dir ./datasheets
+bom pdf C124378 --dir ./datasheets
 
 # Batch download to directory
-uv run bom pdf C2040 C2041 C2042 --dir ./datasheets
+bom pdf C2040 C2041 C2042 --dir ./datasheets
 ```
 
 ### Export to KiCad
@@ -92,25 +91,25 @@ Export component symbols, footprints, and 3D models for use in KiCad:
 
 ```bash
 # Export everything (symbol + footprint + 3D model) for one part
-uv run bom add C2040
+bom add C2040
 
 # Export multiple parts at once
-uv run bom add C2040 C2041 C2042
+bom add C2040 C2041 C2042
 
 # Export to a custom location
-uv run bom add C2040 --output ./kicad-libs/lcsc
+bom add C2040 --output ./kicad-libs/lcsc
 
 # Update existing components
-uv run bom add C2040 --overwrite
+bom add C2040 --overwrite
 
 # Export only specific parts
-uv run bom symbol C2040    # Symbol only
-uv run bom footprint C2040 # Footprint only
-uv run bom 3d C2040        # 3D model only
+bom symbol C2040    # Symbol only
+bom footprint C2040 # Footprint only
+bom 3d C2040        # 3D model only
 
 # All commands support multiple parts
-uv run bom symbol C2040 C2041
-uv run bom footprint C2040 C2041 C2042
+bom symbol C2040 C2041
+bom footprint C2040 C2041 C2042
 ```
 
 **Default location:** `~/Documents/Kicad/easyeda2kicad/`
@@ -123,7 +122,7 @@ The tool will:
 ### Check Version
 
 ```bash
-uv run bom --version
+bom --version
 ```
 
 ## Development
