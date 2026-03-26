@@ -291,8 +291,9 @@ def export_3d_model(
         # Just indicate success without file paths
         result["component_name"] = "Unknown"
 
-    if exporter.output_step and hasattr(exporter.output_step, "name"):
-        result["step_file"] = paths["model_3d_lib"] / f"{exporter.output_step.name}.step"
+    step_name = getattr(exporter.output_step, "name", None)
+    if step_name:
+        result["step_file"] = paths["model_3d_lib"] / f"{step_name}.step"
 
     return result
 
